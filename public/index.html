@@ -3,14 +3,17 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>OpenAI Realtime API with Cloudflare and Replicate</title>
+	<title>VoiceCam</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 	<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 	<script src="/script.js" type="text/babel"></script>
 	<style>
-		/* Set default text color */
+		/* Set default text color and font */
 		:root {
 			--text-color: #111827; /* text-gray-900 */
 			--background-color: #f9fafb; /* gray-50 */
@@ -18,6 +21,7 @@
 		body {
 			color: var(--text-color);
 			background-color: var(--background-color);
+			font-family: 'Poppins', sans-serif;
 		}
 		blockquote {
 			border-color: color-mix(in srgb, var(--text-color) 10%, transparent);
@@ -25,9 +29,13 @@
 		.visualizer-canvas {
 			border-color: color-mix(in srgb, var(--text-color) 20%, transparent);
 		}
+		/* Ensure all elements use Poppins */
+		* {
+			font-family: 'Poppins', sans-serif;
+		}
 	</style>
 </head>
-<body class="min-h-screen font-sans text-lg">
+<body class="min-h-screen text-lg">
 	<div id="root"></div>
 </body>
 </html>

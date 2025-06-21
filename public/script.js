@@ -300,10 +300,10 @@ const App = () => {
 
 	return (
 		<>
-			<div className="max-w-3xl mx-auto px-6 py-12">
-				<h1 className="text-6xl font-bold mb-8">VoiceCam</h1>
-				<p className="text-3xl mb-8">
-					Create and edit images with your voice
+			<div className="max-w-3xl mx-auto px-6 py-8">
+				<h1 className="text-5xl font-bold mb-4 text-center">📸 VoiceCam 🎤</h1>
+				<p className="text-2xl mb-8 text-center italic">
+					Create and edit images with your voice! 
 				</p>
 				
 				{/* Camera Section */}
@@ -347,7 +347,7 @@ const App = () => {
 				</div>
 			</div>
 
-			<footer className="max-w-3xl mx-auto px-6 py-8 opacity-70">
+			{/* <footer className="max-w-3xl mx-auto px-6 py-8 opacity-70">
 				<p>
 					This is a realtime demo of voice-powered function calling
 					using <a href="https://developers.cloudflare.com" className="underline">Cloudflare Workers</a>, <a href="https://replicate.com" className="underline">Replicate</a>, and the <a href="https://platform.openai.com/docs/api-reference/realtime" className="underline">OpenAI Realtime API</a>. It generates images using <a href="https://replicate.com/black-forest-labs/flux-schnell" className="underline">Flux Schnell</a> and edits them using <a href="https://replicate.com/black-forest-labs/flux-kontext-pro" className="underline">Flux Kontext Pro</a>.
@@ -355,7 +355,7 @@ const App = () => {
 				<p className="mt-4">
 					Check out the <a href="https://github.com/replicate/getting-started-with-openai-realtime-api" className="underline">code</a>.
 				</p>
-			</footer>
+			</footer> */}
 		</>
 	);
 };
@@ -454,7 +454,7 @@ const WebcamCapture = ({ onCapture, onClose, isOpen }) => {
 	}, []);
 
 	return (
-		<div className="bg-white p-6 rounded-lg shadow-lg border">
+		<div className="bg-white p-6 rounded-2xl shadow-lg border">
 			<div className="relative">
 				<video 
 					ref={videoRef} 
@@ -469,13 +469,13 @@ const WebcamCapture = ({ onCapture, onClose, isOpen }) => {
 			<div className="mt-4 flex justify-center space-x-4">
 				<button 
 					onClick={handleCapture} 
-					className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-lg text-lg font-semibold"
+					className="px-8 py-3 bg-blue-500 text-white rounded-2xl hover:bg-blue-600 transition-colors shadow-lg text-lg font-semibold"
 				>
 					📸 Capture Photo
 				</button>
 				<button 
 					onClick={() => setIsCameraFlipped(!isCameraFlipped)}
-					className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors shadow-lg text-lg font-semibold"
+					className="px-6 py-3 bg-gray-300 text-gray-700 rounded-2xl hover:bg-gray-400 transition-colors shadow-lg text-lg font-semibold"
 				>
 					🔄
 				</button>
