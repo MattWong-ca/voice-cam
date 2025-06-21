@@ -7,6 +7,7 @@ const App = () => {
 	const [audios, setAudios] = React.useState([]);
 	const [isGenerating, setIsGenerating] = React.useState(false);
 	const [isWebcamOpen, setIsWebcamOpen] = React.useState(true);
+	const [isVoiceActive, setIsVoiceActive] = React.useState(false);
 	const [isCommandsOpen, setIsCommandsOpen] = React.useState(() => {
 		const stored = localStorage.getItem('isCommandsOpen');
 		return stored !== null ? JSON.parse(stored) : true;
@@ -144,6 +145,8 @@ const App = () => {
 	})), [fns]);
 
 	React.useEffect(() => {
+		if (!isVoiceActive) return;
+
 		console.log('tools', tools);
 
 		const peerConnection = new RTCPeerConnection();
@@ -278,7 +281,13 @@ const App = () => {
 			});
 		});
 
-	}, [tools, fns]);
+		// Cleanup function
+		return () => {
+			peerConnection.close();
+			setAudios([]);
+		};
+
+	}, [tools, fns, isVoiceActive]);
 	
 	const Audio = ({ stream }) => {
 		const ref = React.useRef(null);
@@ -301,6 +310,27 @@ const App = () => {
 				<p className="text-3xl mb-8">
 					Take pics and edit them with your voice
 				</p>
+				
+				{/* Voice Toggle Button */}
+				<div className="mb-8 flex justify-center">
+					<button 
+						onClick={() => setIsVoiceActive(!isVoiceActive)}
+						className={`px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 ${
+							isVoiceActive 
+								? 'bg-red-500 text-white hover:bg-red-600 shadow-lg' 
+								: 'bg-green-500 text-white hover:bg-green-600 shadow-lg'
+						}`}
+					>
+						{isVoiceActive ? '🎤 Stop Voice' : '🎤 Start Voice'}
+					</button>
+				</div>
+
+				{/* Voice Visualizer */}
+				{isVoiceActive && (
+					<div className="mb-8">
+						<canvas ref={visualizerRef} className="visualizer-canvas w-full h-20 rounded-lg border"></canvas>
+					</div>
+				)}
 				
 				{/* Camera Section */}
 				<div className="mb-8">
