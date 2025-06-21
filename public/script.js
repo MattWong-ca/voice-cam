@@ -300,6 +300,17 @@ const App = () => {
 				<p className="text-3xl mb-8">
 					Create and edit images with your voice
 				</p>
+				
+				{/* Camera Button */}
+				<div className="mb-8 flex justify-center">
+					<button 
+						onClick={() => setIsWebcamOpen(true)}
+						className="px-8 py-4 bg-blue-500 text-white rounded-lg text-lg font-semibold hover:bg-blue-600 transition-colors shadow-lg"
+					>
+						📸 Take Photo with Webcam
+					</button>
+				</div>
+				
 				<canvas ref={visualizerRef} className="visualizer-canvas w-full h-40 my-8"></canvas>
 				<h2 className="opacity-50 cursor-pointer" onClick={() => setIsCommandsOpen(!isCommandsOpen)}>
 					Commands {isCommandsOpen ? '▾' : '▸'}
