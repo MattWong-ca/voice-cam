@@ -6,11 +6,12 @@ const App = () => {
 	lastImageUrlRef.current = lastImageUrl;
 	const [audios, setAudios] = React.useState([]);
 	const [isGenerating, setIsGenerating] = React.useState(false);
-	const [isWebcamOpen, setIsWebcamOpen] = React.useState(false);
+	const [isWebcamOpen, setIsWebcamOpen] = React.useState(true);
 	const [isCommandsOpen, setIsCommandsOpen] = React.useState(() => {
 		const stored = localStorage.getItem('isCommandsOpen');
 		return stored !== null ? JSON.parse(stored) : true;
 	});
+	const [isCameraFlipped, setIsCameraFlipped] = React.useState(false);
 
 	React.useEffect(() => {
 		localStorage.setItem('isCommandsOpen', JSON.stringify(isCommandsOpen));
@@ -296,15 +297,27 @@ const App = () => {
 	return (
 		<>
 			<div className="max-w-3xl mx-auto px-6 py-12">
-				<h1 className="text-6xl font-bold mb-8">Realtime Kontext</h1>
+				<h1 className="text-6xl font-bold mb-8">VoiceCam</h1>
 				<p className="text-3xl mb-8">
-					Create and edit images with your voice
+					Take pics and edit them with your voice
 				</p>
-				<canvas ref={visualizerRef} className="visualizer-canvas w-full h-40 my-8"></canvas>
-				<h2 className="opacity-50 cursor-pointer" onClick={() => setIsCommandsOpen(!isCommandsOpen)}>
+				
+				{/* Camera Section */}
+				<div className="mb-8">
+					<WebcamCapture 
+						onCapture={handleNewImage} 
+						onClose={() => setIsWebcamOpen(false)}
+						isOpen={isWebcamOpen}
+						isFlipped={isCameraFlipped}
+						onFlip={() => setIsCameraFlipped(!isCameraFlipped)}
+					/>
+				</div>
+
+				{/* <canvas ref={visualizerRef} className="visualizer-canvas w-full h-40 my-8"></canvas> */}
+				{/* <h2 className="opacity-50 cursor-pointer" onClick={() => setIsCommandsOpen(!isCommandsOpen)}>
 					Commands {isCommandsOpen ? '▾' : '▸'}
-				</h2>
-				{isCommandsOpen && (
+				</h2> */}
+				{/* {isCommandsOpen && (
 					<div className="space-y-8 mb-16 mt-8">
 						{Object.entries(fns)
 							.filter(([_, { examplePrompt }]) => examplePrompt)
@@ -318,7 +331,7 @@ const App = () => {
 								</div>
 						))}
 					</div>
-				)}
+				)} */}
 				<div className="fixed bottom-8 right-8 flex flex-col space-y-2">
 					{audios.map((stream, index) => (
 						<Audio key={index} stream={stream} />
@@ -331,8 +344,6 @@ const App = () => {
 					))}
 				</div>
 			</div>
-
-			{isWebcamOpen && <WebcamCapture onCapture={handleNewImage} onClose={() => setIsWebcamOpen(false)} />}
 
 			<footer className="max-w-3xl mx-auto px-6 py-8 opacity-70">
 				<p>
@@ -347,31 +358,66 @@ const App = () => {
 	);
 };
 
-const WebcamCapture = ({ onCapture, onClose }) => {
+const WebcamCapture = ({ onCapture, onClose, isOpen, isFlipped, onFlip }) => {
 	const videoRef = React.useRef(null);
 	const canvasRef = React.useRef(null);
+	const [stream, setStream] = React.useState(null);
+	const [isCameraActive, setIsCameraActive] = React.useState(false);
 
 	React.useEffect(() => {
-		const video = videoRef.current;
-		let stream;
-		if (video) {
-			navigator.mediaDevices.getUserMedia({ video: true })
-				.then(s => {
-					stream = s;
-					video.srcObject = stream;
-				})
-				.catch(err => {
-					console.error("Error accessing webcam:", err);
-					onClose();
-				});
+		if (isOpen && !isCameraActive) {
+			startCamera();
+		} else if (!isOpen && isCameraActive) {
+			stopCamera();
 		}
+	}, [isOpen]);
 
-		return () => {
-			if (stream) {
-				stream.getTracks().forEach(track => track.stop());
+	React.useEffect(() => {
+		if (isCameraActive) {
+			stopCamera();
+			startCamera();
+		}
+	}, [isFlipped]);
+
+	const startCamera = async () => {
+		try {
+			const constraints = {
+				video: {
+					facingMode: isFlipped ? 'user' : 'environment'
+				}
+			};
+			
+			const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+			setStream(newStream);
+			setIsCameraActive(true);
+			
+			if (videoRef.current) {
+				videoRef.current.srcObject = newStream;
 			}
-		};
-	}, []);
+		} catch (err) {
+			console.error("Error accessing webcam:", err);
+			// Fallback to any available camera
+			try {
+				const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+				setStream(fallbackStream);
+				setIsCameraActive(true);
+				
+				if (videoRef.current) {
+					videoRef.current.srcObject = fallbackStream;
+				}
+			} catch (fallbackErr) {
+				console.error("Fallback camera access failed:", fallbackErr);
+			}
+		}
+	};
+
+	const stopCamera = () => {
+		if (stream) {
+			stream.getTracks().forEach(track => track.stop());
+			setStream(null);
+			setIsCameraActive(false);
+		}
+	};
 
 	const handleCapture = () => {
 		const video = videoRef.current;
@@ -380,21 +426,62 @@ const WebcamCapture = ({ onCapture, onClose }) => {
 			const context = canvas.getContext('2d');
 			canvas.width = video.videoWidth;
 			canvas.height = video.videoHeight;
+			
+			// Apply flip transformation if needed
+			if (isFlipped) {
+				context.scale(-1, 1);
+				context.translate(-canvas.width, 0);
+			}
+			
 			context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
 			const dataUrl = canvas.toDataURL('image/png');
 			onCapture(dataUrl);
 		}
 	};
 
+	// Cleanup on unmount
+	React.useEffect(() => {
+		return () => {
+			stopCamera();
+		};
+	}, []);
+
+	if (!isOpen) {
+		return null;
+	}
+
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-			<div className="bg-white p-4 rounded-lg shadow-lg text-black">
-				<video ref={videoRef} autoPlay playsInline className="w-full h-auto rounded"></video>
+		<div className="bg-white p-6 rounded-lg shadow-lg border">
+			<div className="relative">
+				<video 
+					ref={videoRef} 
+					autoPlay 
+					playsInline 
+					className={`w-full h-auto rounded-lg ${isFlipped ? 'transform scale-x-[-1]' : ''}`}
+					style={{ maxHeight: '400px' }}
+				/>
 				<canvas ref={canvasRef} className="hidden"></canvas>
-				<div className="mt-4 flex justify-between">
-					<button onClick={handleCapture} className="px-4 py-2 bg-blue-500 text-white rounded">Capture</button>
-					<button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">Close</button>
-				</div>
+			</div>
+			
+			<div className="mt-4 flex justify-center space-x-4">
+				<button 
+					onClick={handleCapture} 
+					className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+				>
+					📸 Take Photo
+				</button>
+				<button 
+					onClick={onFlip} 
+					className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+				>
+					🔄 {isFlipped ? 'Back Camera' : 'Front Camera'}
+				</button>
+				<button 
+					onClick={onClose} 
+					className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+				>
+					❌ Close
+				</button>
 			</div>
 		</div>
 	);
