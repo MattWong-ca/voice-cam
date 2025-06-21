@@ -130,8 +130,13 @@ const App = () => {
 			},
 			fn: () => {
 				console.log('takePicture');
-				setIsWebcamOpen(true);
-				return { success: true, message: 'Webcam opened.' };
+				// Trigger the capture function in WebcamCapture component
+				if (window.triggerCapture) {
+					window.triggerCapture();
+					return { success: true, message: 'Photo captured!' };
+				} else {
+					return { success: false, error: 'Camera not available.' };
+				}
 			}
 		}
 	}), []);
@@ -432,6 +437,14 @@ const WebcamCapture = ({ onCapture, onClose, isOpen }) => {
 			onCapture(dataUrl);
 		}
 	};
+
+	// Expose capture function globally for voice commands
+	React.useEffect(() => {
+		window.triggerCapture = handleCapture;
+		return () => {
+			delete window.triggerCapture;
+		};
+	}, [isCameraFlipped]); // Re-expose when camera flips to ensure proper orientation
 
 	// Cleanup on unmount
 	React.useEffect(() => {
